@@ -781,30 +781,13 @@
                 overflow-x: hidden; position: relative;
                 display: flex; justify-content: center; align-items: center;
             }
-            .matrix-bg {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(45deg, #000 0%, #001100 50%, #000 100%);
-                z-index: -1;
-                animation: bg-pulse 8s ease-in-out infinite;
-            }
             @keyframes bg-pulse {
                 0%, 100% { background: linear-gradient(45deg, #000 0%, #001100 50%, #000 100%); }
                 50% { background: linear-gradient(45deg, #000 0%, #002200 50%, #000 100%); }
             }
-            .matrix-rain {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px);
-                animation: matrix-fall 20s linear infinite;
-                z-index: -1;
-            }
             @keyframes matrix-fall {
                 0% { transform: translateY(-100%); }
                 100% { transform: translateY(100vh); }
-            }
-            .matrix-code-rain {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                pointer-events: none; z-index: -1;
-                overflow: hidden;
             }
             .matrix-column {
                 position: absolute; top: -100%; left: 0;
@@ -912,16 +895,13 @@
         </style>
     </head>
     <body>
-        <div class="matrix-bg"></div>
-        <div class="matrix-rain"></div>
-        <div class="matrix-code-rain" id="matrixCodeRain"></div>
-            <div class="matrix-text">${t.terminal}</div>
-            <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
-                <select id="languageSelector" style="background: rgba(0, 20, 0, 0.9); border: 2px solid #00ff00; color: #00ff00; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);" onchange="changeLanguage(this.value)">
-                    <option value="zh" ${!isFarsi ? 'selected' : ''}>🇨🇳 中文</option>
-                    <option value="fa" ${isFarsi ? 'selected' : ''}>🇮🇷 فارسی</option>
-                </select>
-            </div>
+        <div class="matrix-text">${t.terminal}</div>
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+            <select id="languageSelector" style="background: rgba(0, 20, 0, 0.9); border: 2px solid #00ff00; color: #00ff00; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);" onchange="changeLanguage(this.value)">
+                <option value="zh" ${!isFarsi ? 'selected' : ''}>🇨🇳 中文</option>
+                <option value="fa" ${isFarsi ? 'selected' : ''}>🇮🇷 فارسی</option>
+            </select>
+        </div>
         <div class="terminal">
             <div class="terminal-header">
                 <div class="terminal-buttons">
@@ -952,47 +932,6 @@
             </div>
         </div>
         <script>
-            function createMatrixRain() {
-                const matrixContainer = document.getElementById('matrixCodeRain');
-                const matrixChars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-                const columns = Math.floor(window.innerWidth / 18);
-                
-                for (let i = 0; i < columns; i++) {
-                    const column = document.createElement('div');
-                    column.className = 'matrix-column';
-                    column.style.left = (i * 18) + 'px';
-                    column.style.animationDelay = Math.random() * 15 + 's';
-                    column.style.animationDuration = (Math.random() * 15 + 8) + 's';
-                    column.style.fontSize = (Math.random() * 4 + 12) + 'px';
-                    column.style.opacity = Math.random() * 0.8 + 0.2;
-                    
-                    let text = '';
-                    const charCount = Math.floor(Math.random() * 30 + 20);
-                    for (let j = 0; j < charCount; j++) {
-                        const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                        const brightness = Math.random() > 0.1 ? '#00ff00' : '#00aa00';
-                        text += '<span style="color: ' + brightness + ';">' + char + '</span><br>';
-                    }
-                    column.innerHTML = text;
-                    matrixContainer.appendChild(column);
-                }
-                
-                setInterval(function() {
-                    const columns = matrixContainer.querySelectorAll('.matrix-column');
-                    columns.forEach(function(column) {
-                        if (Math.random() > 0.95) {
-                            const chars = column.querySelectorAll('span');
-                            if (chars.length > 0) {
-                                const randomChar = chars[Math.floor(Math.random() * chars.length)];
-                                randomChar.style.color = '#ffffff';
-                                setTimeout(function() {
-                                    randomChar.style.color = '#00ff00';
-                                }, 200);
-                            }
-                        }
-                    });
-                }, 100);
-            }
             
             function isValidUUID(uuid) {
                 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -1424,7 +1363,7 @@
             portsToGenerate.forEach(({ port, tls }) => {
                 if (tls) {
                     
-                    const wsNodeName = `${nodeNameBase}-${port}-WS-TLS`;
+                    const wsNodeName = `${nodeNameBase}-TLS`;
                     const wsParams = new URLSearchParams({ 
                         encryption: 'none', 
                         security: 'tls', 
@@ -1437,7 +1376,7 @@
                     links.push(`${proto}://${user}@${safeIP}:${port}?${wsParams.toString()}#${encodeURIComponent(wsNodeName)}`);
                 } else {
                     
-                    const wsNodeName = `${nodeNameBase}-${port}-WS`;
+                    const wsNodeName = `${nodeNameBase}`;
                     const wsParams = new URLSearchParams({
                         encryption: 'none',
                         security: 'none',
@@ -1494,7 +1433,7 @@
             portsToGenerate.forEach(({ port, tls }) => {
                 if (tls) {
                     
-                    const wsNodeName = `${nodeNameBase}-${port}-${atob('VHJvamFu')}-WS-TLS`;
+                    const wsNodeName = `${nodeNameBase}-TLS`;
                     const wsParams = new URLSearchParams({ 
                         security: 'tls', 
                         sni: workerDomain, 
@@ -1506,7 +1445,7 @@
                     links.push(`${atob('dHJvamFuOi8v')}${password}@${safeIP}:${port}?${wsParams.toString()}#${encodeURIComponent(wsNodeName)}`);
                 } else {
                     
-                    const wsNodeName = `${nodeNameBase}-${port}-${atob('VHJvamFu')}-WS`;
+                    const wsNodeName = `${nodeNameBase}`;
                     const wsParams = new URLSearchParams({
                         security: 'none',
                         type: 'ws',
@@ -2094,30 +2033,13 @@
                 background: #000; color: #00ff00; min-height: 100vh;
                 overflow-x: hidden; position: relative;
             }
-            .matrix-bg {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(45deg, #000 0%, #001100 50%, #000 100%);
-                z-index: -1;
-                animation: bg-pulse 8s ease-in-out infinite;
-            }
             @keyframes bg-pulse {
                 0%, 100% { background: linear-gradient(45deg, #000 0%, #001100 50%, #000 100%); }
                 50% { background: linear-gradient(45deg, #000 0%, #002200 50%, #000 100%); }
             }
-            .matrix-rain {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px);
-                animation: matrix-fall 20s linear infinite;
-                z-index: -1;
-            }
             @keyframes matrix-fall {
                 0% { transform: translateY(-100%); }
                 100% { transform: translateY(100vh); }
-            }
-            .matrix-code-rain {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                pointer-events: none; z-index: -1;
-                overflow: hidden;
             }
             .matrix-column {
                 position: absolute; top: -100%; left: 0;
@@ -2299,16 +2221,13 @@
         </style>
     </head>
     <body>
-        <div class="matrix-bg"></div>
-        <div class="matrix-rain"></div>
-        <div class="matrix-code-rain" id="matrixCodeRain"></div>
-            <div class="matrix-text">${t.terminal}</div>
-            <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
-                <select id="languageSelector" style="background: rgba(0, 20, 0, 0.9); border: 2px solid #00ff00; color: #00ff00; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);" onchange="changeLanguage(this.value)">
-                    <option value="zh" ${!isFarsi ? 'selected' : ''}>🇨🇳 中文</option>
-                    <option value="fa" ${isFarsi ? 'selected' : ''}>🇮🇷 فارسی</option>
-                </select>
-            </div>
+        <div class="matrix-text">${t.terminal}</div>
+        <div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+            <select id="languageSelector" style="background: rgba(0, 20, 0, 0.9); border: 2px solid #00ff00; color: #00ff00; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 14px; cursor: pointer; text-shadow: 0 0 5px #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);" onchange="changeLanguage(this.value)">
+                <option value="zh" ${!isFarsi ? 'selected' : ''}>🇨🇳 中文</option>
+                <option value="fa" ${isFarsi ? 'selected' : ''}>🇮🇷 فارسی</option>
+            </select>
+        </div>
         <div class="container">
             <div class="header">
                     <h1 class="title">${t.title}</h1>
@@ -2738,48 +2657,6 @@
                         });
                     }
                 }
-            }
-            
-            function createMatrixRain() {
-                const matrixContainer = document.getElementById('matrixCodeRain');
-                const matrixChars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-                const columns = Math.floor(window.innerWidth / 18);
-                
-                for (let i = 0; i < columns; i++) {
-                    const column = document.createElement('div');
-                    column.className = 'matrix-column';
-                    column.style.left = (i * 18) + 'px';
-                    column.style.animationDelay = Math.random() * 15 + 's';
-                    column.style.animationDuration = (Math.random() * 15 + 8) + 's';
-                    column.style.fontSize = (Math.random() * 4 + 12) + 'px';
-                    column.style.opacity = Math.random() * 0.8 + 0.2;
-                    
-                    let text = '';
-                    const charCount = Math.floor(Math.random() * 30 + 20);
-                    for (let j = 0; j < charCount; j++) {
-                        const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                        const brightness = Math.random() > 0.1 ? '#00ff00' : '#00aa00';
-                        text += '<span style="color: ' + brightness + ';">' + char + '</span><br>';
-                    }
-                    column.innerHTML = text;
-                    matrixContainer.appendChild(column);
-                }
-                
-                setInterval(function() {
-                    const columns = matrixContainer.querySelectorAll('.matrix-column');
-                    columns.forEach(function(column) {
-                        if (Math.random() > 0.95) {
-                            const chars = column.querySelectorAll('span');
-                            if (chars.length > 0) {
-                                const randomChar = chars[Math.floor(Math.random() * chars.length)];
-                                randomChar.style.color = '#ffffff';
-                                setTimeout(function() {
-                                    randomChar.style.color = '#00ff00';
-                                }, 200);
-                            }
-                        }
-                    });
-                }, 100);
             }
             
             async function checkSystemStatus() {
@@ -4167,19 +4044,19 @@
             
             if (CF_HTTPS_PORTS.includes(port)) {
                 
-                const wsNodeName = `${nodeName}-${port}-WS-TLS`;
+                const wsNodeName = `${nodeName}-TLS`;
                 const link = `${proto}://${user}@${item.ip}:${port}?encryption=none&security=tls&sni=${workerDomain}&fp=chrome&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                 links.push(link);
             } else if (CF_HTTP_PORTS.includes(port)) {
                 
                 if (!disableNonTLS) {
-                    const wsNodeName = `${nodeName}-${port}-WS`;
+                    const wsNodeName = `${nodeName}`;
                     const link = `${proto}://${user}@${item.ip}:${port}?encryption=none&security=none&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                     links.push(link);
                 }
             } else {
                 
-                const wsNodeName = `${nodeName}-${port}-WS-TLS`;
+                const wsNodeName = `${nodeName}-TLS`;
                 const link = `${proto}://${user}@${item.ip}:${port}?encryption=none&security=tls&sni=${workerDomain}&fp=chrome&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                 links.push(link);
             }
@@ -4196,7 +4073,7 @@
             const safeIP = item.ip.includes(':') ? `[${item.ip}]` : item.ip;
             const port = item.port || 443;
             
-            const wsNodeName = `${nodeNameBase}-${port}-xhttp`;
+            const wsNodeName = `${nodeNameBase}`;
             const params = new URLSearchParams({
                 encryption: 'none',
                 security: 'tls',
@@ -4231,19 +4108,19 @@
             
             if (CF_HTTPS_PORTS.includes(port)) {
                 
-                const wsNodeName = `${nodeName}-${port}-${atob('VHJvamFu')}-WS-TLS`;
+                const wsNodeName = `${nodeName}-${atob('VHJvamFu')}-TLS`;
                 const link = `${atob('dHJvamFuOi8v')}${password}@${item.ip}:${port}?security=tls&sni=${workerDomain}&fp=chrome&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                 links.push(link);
             } else if (CF_HTTP_PORTS.includes(port)) {
                 
                 if (!disableNonTLS) {
-                    const wsNodeName = `${nodeName}-${port}-${atob('VHJvamFu')}-WS`;
+                    const wsNodeName = `${nodeName}-${atob('VHJvamFu')}`;
                     const link = `${atob('dHJvamFuOi8v')}${password}@${item.ip}:${port}?security=none&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                     links.push(link);
                 }
             } else {
                 
-                const wsNodeName = `${nodeName}-${port}-${atob('VHJvamFu')}-WS-TLS`;
+                const wsNodeName = `${nodeName}-${atob('VHJvamFu')}-TLS`;
                 const link = `${atob('dHJvamFuOi8v')}${password}@${item.ip}:${port}?security=tls&sni=${workerDomain}&fp=chrome&type=ws&host=${workerDomain}&path=${wsPath}#${encodeURIComponent(wsNodeName)}`;
                 links.push(link);
             }
